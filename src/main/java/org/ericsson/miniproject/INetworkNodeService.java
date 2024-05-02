@@ -1,0 +1,18 @@
+package org.ericsson.miniproject;
+
+import java.util.List;
+
+public interface INetworkNodeService {
+
+    List<NetworkNode> getAllNodes();
+
+    NetworkNode getNodeById(int id);
+
+    ResponseMsg addNode(NetworkNode node);
+
+    NetworkNode updateNode(int id, NetworkNode updatedNode);
+
+    boolean deleteNode(int id);
+
+    boolean isValidNetworkNode(NetworkNode node);
+}

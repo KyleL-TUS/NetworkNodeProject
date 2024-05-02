@@ -10,11 +10,12 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class NetworkNodeService {
+public class NetworkNodeService implements INetworkNodeService{
 
     @Autowired
     private NetworkNodeRepository nodeRepository;
 
+    @Override
     public ResponseMsg addNode(NetworkNode node) {
         try{
             nodeRepository.save(node);
@@ -25,11 +26,13 @@ public class NetworkNodeService {
         return ResponseMsg.NODE_CREATED;
     }
 
+    @Override
     public NetworkNode getNodeById(int id) {
         Optional<NetworkNode> optionalNode = nodeRepository.findById(id);
         return optionalNode.orElse(null);
     }
 
+    @Override
     public NetworkNode updateNode(int id, NetworkNode updatedNode) {
         if (nodeRepository.existsById(id)) {
             updatedNode.setId(id);
@@ -38,6 +41,7 @@ public class NetworkNodeService {
         return null;
     }
 
+    @Override
     public boolean deleteNode(int id) {
         if (nodeRepository.existsById(id)) {
             nodeRepository.deleteById(id);
@@ -46,7 +50,14 @@ public class NetworkNodeService {
         return false;
     }
 
+    @Override
     public List<NetworkNode> getAllNodes() {
         return nodeRepository.findAll();
+    }
+
+    @Override
+    public boolean isValidNetworkNode(NetworkNode node) {
+        // TODO Node Validation logic
+        return false;
     }
 }

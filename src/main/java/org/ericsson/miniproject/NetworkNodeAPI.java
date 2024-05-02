@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootApplication
-public class Application {
+public class NetworkNodeAPI {
 
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(NetworkNodeAPI.class, args);
         log.info("Network Node API Service running...");
     }
 }
