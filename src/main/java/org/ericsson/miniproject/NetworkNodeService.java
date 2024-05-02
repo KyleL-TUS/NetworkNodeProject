@@ -23,7 +23,11 @@ public class NetworkNodeService {
 
     public NetworkNode getNodeById(int id) {
         Optional<NetworkNode> optionalNode = nodeRepository.findById(id);
-        return optionalNode.orElse(null);
+
+        if(optionalNode.isEmpty()){
+            //log
+            return null;
+        }else return optionalNode.get();
     }
 
     public NetworkNode updateNode(int id, NetworkNode updatedNode) {
@@ -45,4 +49,5 @@ public class NetworkNodeService {
     public List<NetworkNode> getAllNodes() {
         return nodeRepository.findAll();
     }
+
 }
