@@ -2,10 +2,13 @@ package org.ericsson.miniproject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.*;
 
+@Slf4j
 @Service
 public class NetworkNodeService {
 
@@ -18,6 +21,7 @@ public class NetworkNodeService {
         }catch(IllegalArgumentException iae){
             System.out.println(iae.getMessage());
         }
+        log.info(ResponseMsg.NODE_CREATED.toString());
         return ResponseMsg.NODE_CREATED;
     }
 
