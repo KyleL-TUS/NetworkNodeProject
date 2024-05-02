@@ -17,13 +17,13 @@ public class NetworkNodeService implements INetworkNodeService{
 
     @Override
     public ResponseMsg addNode(NetworkNode node) {
-        try{
-            nodeRepository.save(node);
-        }catch(IllegalArgumentException iae){
-            System.out.println(iae.getMessage());
+        if(!isValidNetworkNode(node)){
+            log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_INVALID, node));
+            return ResponseMsg.NODE_INVALID;
         }
-        log.info(ResponseMsg.NODE_CREATED.toString());
-        return ResponseMsg.NODE_CREATED;
+        nodeRepository.save(node);
+        log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_ADDED, node));
+        return ResponseMsg.NODE_ADDED;
     }
 
     @Override
@@ -57,7 +57,27 @@ public class NetworkNodeService implements INetworkNodeService{
 
     @Override
     public boolean isValidNetworkNode(NetworkNode node) {
-        // TODO Node Validation logic
-        return false;
+        // Check if node is null
+        if (node == null) {
+            return false;
+        }
+        // Check node name
+        if(node.getNode_name() == null || node.getNode_name().isBlank()){
+            return false;
+        }
+        // Check node location
+        if(node.getNode_location() == null || node.getNode_location().isBlank()){
+            return false;
+        }
+        // Latitude ranges from -90 to 90 degrees
+        if(node.getLatitude() < -90 || node.getLatitude() > 90){
+            return false;
+        }
+        // Longitude ranges from -180 to 180 degrees
+        if(node.getLongitude() < -180 || node.getLongitude() > 180){
+            return false;
+        }
+        // Node is valid
+        return true;
     }
 }

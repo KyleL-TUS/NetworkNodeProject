@@ -11,6 +11,6 @@ public class NetworkNodeAPI {
 
     public static void main(String[] args) {
         SpringApplication.run(NetworkNodeAPI.class, args);
-        log.info("Network Node API Service running...");
+        log.info("Network Node API Micro Service running...");
     }
 }
