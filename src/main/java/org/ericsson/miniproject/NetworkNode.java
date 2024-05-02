@@ -1,9 +1,5 @@
 package org.ericsson.miniproject;
 
-//import javax.persistence.Entity;
-//import javax.persistence.GeneratedValue;
-//import javax.persistence.GenerationType;
-//import javax.persistence.Id;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,8 +10,8 @@ public class NetworkNode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String name;
-    private String location;
+    private String node_name;
+    private String node_location;
     private int latitude;
     private int longitude;
 
@@ -24,8 +20,8 @@ public class NetworkNode {
     }
 
     public NetworkNode(String name, String location, int latitude, int longitude) {
-        this.name = name;
-        this.location = location;
+        this.node_name = name;
+        this.node_location = location;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -39,20 +35,20 @@ public class NetworkNode {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNode_name() {
+        return node_name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNode_name(String name) {
+        this.node_name = name;
     }
 
-    public String getLocation() {
-        return location;
+    public String getNode_location() {
+        return node_location;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setNode_location(String location) {
+        this.node_location = location;
     }
 
     public int getLatitude() {
