@@ -29,7 +29,11 @@ public class NetworkNodeService implements INetworkNodeService{
     @Override
     public NetworkNode getNodeById(int id) {
         Optional<NetworkNode> optionalNode = nodeRepository.findById(id);
-        return optionalNode.orElse(null);
+
+        if(optionalNode.isEmpty()){
+            //log
+            return null;
+        }else return optionalNode.get();
     }
 
     @Override

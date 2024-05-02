@@ -5,20 +5,58 @@ $(document).ready(function(){
 function queryNetworkNodes(){
     for(var i =0; i < 6; i++){
         $("#cardsPage").append(
-            newCard(i, "Router", "Roscommon" , "90", "200")
+            newCard(i, "Router", "Roscommon" , "53.447352354600625", "-7.888769943739464")
         );
     }
 }
 
 
+function handleAdding(){
+    var networkName = $('#newNetworkName').val();
+    var longitude = $('#newLongitude').val();
+    var latitude = $('#newLatitude').val();
+
+    if(networkName == "" && longitude == "" && latitude == ""){
+        createToastMsg("Please make sure all entries are complete!", "red")
+    }else{
+        //ajax
+        console.log(networkName);
+        $('#modalSpinner').css("visibility", "visible");
+    }
+}
+
 function handleEdit(id){
-    console.log(id)
+
+    //ajax
+
+    var networkName = $('#editNetworkName').val();
+    var longitude = $('#editLongitude').val();
+    var latitude = $('#editLatitude').val();
+
+    if(networkName == "" && longitude == "" && latitude == ""){
+        createToastMsg("Please make sure all entries are complete!", "red")
+    }else{
+        //ajax
+
+        console.log(networkName);
+        $('#modalSpinner').css("visibility", "visible");
+    }
 }
 
 function handleDelete(id){
     console.log(id)
+    //ajax
 }
 
+function handleSearch(){
+    var searchNodeID = $('#findNodeID').val();
+    if(Number.isInteger(parseInt(searchNodeID))){
+        //ajax
+    }
+    else{
+        createToastMsg("Enter a valid node ID", "red")
+    }
+}
 
 function newCard(id,name,location,latitude, longitude){
     return (
@@ -50,7 +88,7 @@ function newCard(id,name,location,latitude, longitude){
         '<br>'+
         '<div class="row">'+
         '<div class="col-*-*" style="font-weight: bold">'+
-        '<a href="#" class="btn btn-primary" onclick="showMap()">'+
+        '<a href="#" class="btn btn-primary" onclick="showModalPopUp(\'' + latitude + '\',\'' + longitude + '\')">'+
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-map" viewBox="0 0 16 16">'+
         '<path fill-rule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/>'+
         '</svg>'+
@@ -102,8 +140,11 @@ function editModalPopUp(id){
 
     $('#modalFooter').empty();
     $('#modalFooter').append(
-        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>'+
-        '<button type="button" class="btn btn-success" onclick="handleEdit('+id+')">Make Changes</button>'
+        '<div id="modalSpinner" class="spinner-border" style="width: 3rem; height: 3rem; visibility: hidden;" role="status">'+
+
+        '</div>'+
+    '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
+    '<button type="button" class="btn btn-success" onclick="handleEdit('+id+')">Make Changes</button>'
     );
 
     $('#myModal').modal('show');
@@ -153,6 +194,9 @@ function createNodeModalPopUp(){
 
     $('#modalFooter').empty();
     $('#modalFooter').append(
+        '<div id="modalSpinner" class="spinner-border" style="width: 3rem; height: 3rem; visibility: hidden;" role="status">'+
+
+        '</div>'+
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>'+
         '<button type="button" class="btn btn-success" onclick="handleAdding()">Create New Node</button>'
     );
@@ -160,3 +204,38 @@ function createNodeModalPopUp(){
     $('#myModal').modal('show');
 }
 
+function showModalPopUp(lat, long){
+    $('#myModalLabel').empty();
+    $('#myModalLabel').html("Show Network Node Map");
+
+    $('#modalBody').empty();
+    $('#modalBody').append(
+       '<img src="https://maps.googleapis.com/maps/api/staticmap?center=' +
+        + lat +','+ long +
+        '&zoom=12' +
+        '&size=600x400&maptype=roadmap&markers=color:red%7Clabel:N%7C' +
+        + lat +','+ long +
+        '&key=AIzaSyBvyi-ZxYA0-x8hmMolKY9f_wjAK8xplhc"  width="760" height="520">'
+    );
+
+    $('#modalFooter').empty();
+    $('#modalFooter').append(
+    '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>'
+)
+    ;
+
+    $('#myModal').modal('show');
+}
+function createToastMsg(msg, colour){
+    Toastify({
+        text: msg,
+        duration: 3000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "center",
+        style: {
+            background: colour,
+        },
+    }).showToast();
+}
