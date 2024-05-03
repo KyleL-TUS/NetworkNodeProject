@@ -29,8 +29,13 @@ public class NetworkNodeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NetworkNode> getNodeById(@PathVariable("id") Long id) {
-        return ResponseEntity.ok().body(networkNodeService.getNodeById(Math.toIntExact(id)));
+    public ResponseEntity<NetworkNode> getNodeById(@PathVariable("id") int id) {
+        NetworkNode foundNetworkNode = networkNodeService.getNodeById(id);
+        if(foundNetworkNode != null){
+            return ResponseEntity.ok().body(foundNetworkNode);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 
