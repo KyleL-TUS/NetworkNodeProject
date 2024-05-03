@@ -1,5 +1,10 @@
 package org.ericsson.miniproject;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -11,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -60,9 +66,32 @@ public class NetworkNodeControllerTests {
         // Check the response
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals("msg: Network node successfully added., nodeId= 1", responseEntity.getBody());
-
     }
+
     @Order(2)
+    @Test
+    void getAllNodes() throws JsonProcessingException{
+        ParameterizedTypeReference<List<NetworkNode>> responseType = new ParameterizedTypeReference<List<NetworkNode>>() {};
+        ResponseEntity<List<NetworkNode>> responseEntity = testRestTemplate.exchange(baseUrl, HttpMethod.GET, null, responseType);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(responseEntity.getBody().isEmpty());
+
+        // Add single node
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String nodeJson = objectMapper.writeValueAsString(node);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        testRestTemplate.postForEntity(baseUrl, new HttpEntity<>(nodeJson, headers), String.class);
+
+        // verify new list contains newly added node
+        responseEntity = testRestTemplate.exchange(baseUrl, HttpMethod.GET, null, responseType);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(1, responseEntity.getBody().size());
+        assertEquals(1, responseEntity.getBody().get(0).getId());
+    }
+
+    @Order(3)
     @Test
     void deleteNode() {
         NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
@@ -86,7 +115,7 @@ public class NetworkNodeControllerTests {
         assertTrue(deleteResponse.getBody());
     }
 
-    @Order(3)
+    @Order(4)
     @Test
     void getNodeById() {
         NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);

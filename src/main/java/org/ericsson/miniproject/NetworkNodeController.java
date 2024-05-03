@@ -26,9 +26,7 @@ public class NetworkNodeController {
 
     @GetMapping
     public ResponseEntity<Collection<NetworkNode>> getAllNodes() {
-        // ResponseEntity
         return ResponseEntity.ok().body(networkNodeService.getAllNodes());
-
     }
 
     @GetMapping("/{id}")
@@ -52,5 +50,4 @@ public class NetworkNodeController {
 
         return ResponseEntity.ok().body(networkNodeService.deleteNode(Math.toIntExact(id)));
     }
-
 }
