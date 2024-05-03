@@ -47,10 +47,9 @@ public class NetworkNodeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<NetworkNode>  deleteNode(@PathVariable("id") Long id) {
+    public ResponseEntity<Boolean>  deleteNode(@PathVariable("id") Long id) {
 
-        //return ResponseEntity.ok().body(networkNodeService.deleteNode(Math.toIntExact(id)));
-        return null;
+        return ResponseEntity.ok().body(networkNodeService.deleteNode(Math.toIntExact(id)));
     }
 
 }
