@@ -1,5 +1,6 @@
 package org.ericsson.miniproject;
 
+import static org.ericsson.miniproject.ResponseMsg.NODE_UPDATED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -137,5 +138,38 @@ public class NetworkNodeControllerTests {
         assertEquals("Test loc", getNodeResponse.getBody().getNode_location());
         assertEquals(50, getNodeResponse.getBody().getLatitude());
         assertEquals(90, getNodeResponse.getBody().getLongitude());
+    }
+
+    @Order(5)
+    @Test
+    void updateNode() throws  JsonProcessingException{
+        //Adding test node
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
+        ResponseEntity<String> addNodeResponse = testRestTemplate.postForEntity(baseUrl, node, String.class);
+        assertEquals(HttpStatus.OK, addNodeResponse.getStatusCode());
+
+        //Get node based on id
+        String[] splitResponse = addNodeResponse.getBody().split("=");
+        String nodeIdStr = splitResponse[1].trim();
+        int nodeId = Integer.parseInt(nodeIdStr);
+
+        //Retrieve node
+        ResponseEntity<NetworkNode> getNodeResponse = testRestTemplate.getForEntity(baseUrl + "/" + nodeId, NetworkNode.class);
+        assertEquals(HttpStatus.OK, getNodeResponse.getStatusCode());
+
+        //Update the node
+        NetworkNode retrievedNode = getNodeResponse.getBody();
+        retrievedNode.setNode_name("Updated Test node");
+
+        //Send updated node to the server
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<NetworkNode> entity = new HttpEntity<>(retrievedNode, headers);
+
+        ResponseEntity<String> updateResponse = testRestTemplate.exchange(baseUrl + "/" + nodeId, HttpMethod.PUT, entity, String.class);
+        assertEquals(HttpStatus.OK, updateResponse.getStatusCode());
+        System.out.println(updateResponse.getBody());
+        assertEquals("Network node successfully updated.", updateResponse.getBody());
+
     }
 }
