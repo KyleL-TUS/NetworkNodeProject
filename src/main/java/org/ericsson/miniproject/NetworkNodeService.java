@@ -31,9 +31,12 @@ public class NetworkNodeService implements INetworkNodeService{
         Optional<NetworkNode> optionalNode = nodeRepository.findById(id);
 
         if(optionalNode.isEmpty()){
-            //log
+            log.info(String.format("msg: %s, node-id: %s", ResponseMsg.NODE_NOT_FOUND, id));
             return null;
-        }else return optionalNode.get();
+        }else {
+            log.info(String.format("msg: %s, node-: %s", ResponseMsg.NODE_FOUND, optionalNode.get()));
+            return optionalNode.get();
+        }
     }
 
     @Override
