@@ -1,9 +1,12 @@
 package org.ericsson.miniproject;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +30,7 @@ public class NetworkNodeService implements INetworkNodeService{
             log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_FOUND, node));
             return -1;
         }
+        node.setNode_location(getLocationService(node.getLatitude(), node.getLongitude()));
         nodeRepository.save(node);
         nodeRepository.flush();
         log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_ADDED, node));
@@ -50,6 +54,7 @@ public class NetworkNodeService implements INetworkNodeService{
     public ResponseMsg updateNode(int id, NetworkNode updatedNode) {
         if (nodeRepository.existsById(id)) {
             updatedNode.setId(id);
+            updatedNode.setNode_location(getLocationService(updatedNode.getLatitude(), updatedNode.getLongitude()));
             nodeRepository.save(updatedNode);
             log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_UPDATED, updatedNode));
             return ResponseMsg.NODE_UPDATED;
@@ -99,5 +104,42 @@ public class NetworkNodeService implements INetworkNodeService{
         }
         // Node is valid
         return true;
+    }
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+
+    public String getLocationService(double Lat, double Lon){
+        String location = "Unknown";
+
+        String apiKey = "AIzaSyBvyi-ZxYA0-x8hmMolKY9f_wjAK8xplhc";
+        String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + Lat + "," + Lon + "&key=" + apiKey;
+        String response = restTemplate.getForObject(url, String.class);
+        System.out.println(url);
+        try {
+            JsonNode rootNode = objectMapper.readTree(response);
+            JsonNode resultsNode = rootNode.get("results");
+            System.out.println(resultsNode);
+            if (resultsNode != null && resultsNode.isArray() && resultsNode.size() > 0) {
+                JsonNode areaComponentNode = resultsNode.get(0).get("address_components");
+                if (areaComponentNode != null && areaComponentNode.isArray()) {
+                    String area = areaComponentNode.get(2).get("short_name").asText();
+                    location = area;
+                }
+                JsonNode regionComponentNode = resultsNode.get(0).get("address_components");
+                if (regionComponentNode != null && regionComponentNode.isArray()) {
+                    String region = regionComponentNode.get(3).get("short_name").asText();
+                    location += ", " + region;
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(location);
+        return location;
     }
 }

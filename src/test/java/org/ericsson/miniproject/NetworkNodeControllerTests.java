@@ -135,7 +135,7 @@ public class NetworkNodeControllerTests {
         assertEquals(HttpStatus.OK, getNodeResponse.getStatusCode());
         assertNotNull(getNodeResponse.getBody());
         assertEquals("Test node", getNodeResponse.getBody().getNode_name());
-        assertEquals("Test loc", getNodeResponse.getBody().getNode_location());
+        assertEquals("Mongun-Tayginskiy Rayon, Tuva Republic", getNodeResponse.getBody().getNode_location());
         assertEquals(50, getNodeResponse.getBody().getLatitude());
         assertEquals(90, getNodeResponse.getBody().getLongitude());
     }
