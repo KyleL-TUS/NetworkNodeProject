@@ -1,8 +1,5 @@
 package org.ericsson.miniproject;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -22,6 +19,8 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @Sql(scripts = { "classpath:clear-data.sql" }, executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 @ActiveProfiles("dev")
@@ -85,5 +84,29 @@ public class NetworkNodeControllerTests {
         // Check the response
         assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
         assertTrue(deleteResponse.getBody());
+    }
+
+    @Order(3)
+    @Test
+    void getNodeById() {
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
+        ResponseEntity<String> addNodeResponse = testRestTemplate.postForEntity(baseUrl, node, String.class);
+        assertEquals(HttpStatus.OK, addNodeResponse.getStatusCode());
+
+        // Extract the node ID from the response of adding a node
+        String[] splitResponse = addNodeResponse.getBody().split("=");
+        String nodeIdStr = splitResponse[1].trim();
+        int nodeId = Integer.parseInt(nodeIdStr);
+
+        // Send the GET request to retrieve the added node
+        ResponseEntity<NetworkNode> getNodeResponse = testRestTemplate.getForEntity(baseUrl + "/" + nodeId, NetworkNode.class);
+
+        // Check the response
+        assertEquals(HttpStatus.OK, getNodeResponse.getStatusCode());
+        assertNotNull(getNodeResponse.getBody());
+        assertEquals("Test node", getNodeResponse.getBody().getNode_name());
+        assertEquals("Test loc", getNodeResponse.getBody().getNode_location());
+        assertEquals(50, getNodeResponse.getBody().getLatitude());
+        assertEquals(90, getNodeResponse.getBody().getLongitude());
     }
 }
