@@ -16,14 +16,15 @@ public class NetworkNodeService implements INetworkNodeService{
     private NetworkNodeRepository nodeRepository;
 
     @Override
-    public ResponseMsg addNode(NetworkNode node) {
+    public int addNode(NetworkNode node) {
         if(!isValidNetworkNode(node)){
             log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_INVALID, node));
-            return ResponseMsg.NODE_INVALID;
+            return -1;
         }
         nodeRepository.save(node);
+        nodeRepository.flush();
         log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_ADDED, node));
-        return ResponseMsg.NODE_ADDED;
+        return nodeRepository.findNodeByPosition(node.getLongitude(), node.getLatitude()).get().getId();
     }
 
     @Override

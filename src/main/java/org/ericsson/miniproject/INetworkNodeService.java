@@ -8,7 +8,7 @@ public interface INetworkNodeService {
 
     NetworkNode getNodeById(int id);
 
-    ResponseMsg addNode(NetworkNode node);
+    int addNode(NetworkNode node);
 
     ResponseMsg updateNode(int id, NetworkNode updatedNode);
 

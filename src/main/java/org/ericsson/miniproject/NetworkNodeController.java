@@ -17,8 +17,11 @@ public class NetworkNodeController {
 
     // REST endpoints for CRUD operations
     @PostMapping
-    public ResponseEntity<ResponseMsg>  addNode(@RequestBody NetworkNode node) {
-        return ResponseEntity.ok().body(networkNodeService.addNode(node));
+    public ResponseEntity<String>  addNode(@RequestBody NetworkNode node) {
+        int nodeId = networkNodeService.addNode(node);
+        String responseStr = String.format("msg: %s, nodeId= %d", 
+            ((nodeId == -1)? ResponseMsg.NODE_INVALID: ResponseMsg.NODE_ADDED), nodeId);
+        return ResponseEntity.ok().body(responseStr);
     }
 
     @GetMapping

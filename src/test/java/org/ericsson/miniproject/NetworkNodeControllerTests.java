@@ -4,11 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 
-import javax.print.attribute.standard.Media;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
