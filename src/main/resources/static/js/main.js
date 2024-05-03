@@ -3,11 +3,20 @@ $(document).ready(function(){
 });
 
 function queryNetworkNodes(){
-    for(var i =0; i < 6; i++){
-        $("#cardsPage").append(
-            newCard(i, "Router", "Roscommon" , "53.447352354600625", "-7.888769943739464")
-        );
-    }
+    $('#cardsPage').empty();
+
+    $.ajax({
+        type: "GET",
+        url: "http://localhost:8081/api-v1/nodes",
+        success: function(response){
+            for(let i=0; i < response.length; i++){
+                $('#cardsPage').append(newCard(response[i].id, response[i].node_name,response[i].node_location, response[i].latitude, response[i].longitude));
+            }
+        },
+        error: function() {
+            createToastMsg("Failed to load network nodes", "red")
+        }
+    });
 }
 
 
@@ -16,18 +25,42 @@ function handleAdding(){
     var longitude = $('#newLongitude').val();
     var latitude = $('#newLatitude').val();
 
+
     if(networkName == "" && longitude == "" && latitude == ""){
         createToastMsg("Please make sure all entries are complete!", "red")
     }else{
-        //ajax
-        console.log(networkName);
+        var networkNode = {
+            node_name: networkName,
+            node_location: "Unknown",
+            longitude : longitude,
+            latitude: latitude
+        };
+        var jsonData = JSON.stringify(networkNode);
+
         $('#modalSpinner').css("visibility", "visible");
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:8081/api-v1/nodes",
+            data: jsonData,
+            contentType: "application/json; charset=utf-8",
+            success: function(){
+                $('#myModal').modal('toggle');
+                createToastMsg("The network node has been created!", "green")
+                $('#modalSpinner').css("visibility", "hidden");
+                queryNetworkNodes();
+            },
+            error: function() {
+                $('#myModal').modal('toggle');
+                createToastMsg("The network node has not been created!", "red")
+                $('#modalSpinner').css("visibility", "hidden");
+                queryNetworkNodes();
+            }
+        });
+
     }
 }
 
 function handleEdit(id){
-
-    //ajax
 
     var networkName = $('#editNetworkName').val();
     var longitude = $('#editLongitude').val();
@@ -36,22 +69,68 @@ function handleEdit(id){
     if(networkName == "" && longitude == "" && latitude == ""){
         createToastMsg("Please make sure all entries are complete!", "red")
     }else{
-        //ajax
+        var networkNode = {
+            node_name: networkName,
+            node_location: "Unknown",
+            longitude : longitude,
+            latitude: latitude
+        };
+        var jsonData = JSON.stringify(networkNode);
 
-        console.log(networkName);
         $('#modalSpinner').css("visibility", "visible");
+        $.ajax({
+            type: "PUT",
+            url: "http://localhost:8081/api-v1/nodes/" + id,
+            data: jsonData,
+            contentType: "application/json; charset=utf-8",
+            success: function(){
+                $('#myModal').modal('toggle');
+                createToastMsg("The network node has been changed!", "green")
+                $('#modalSpinner').css("visibility", "hidden");
+                queryNetworkNodes();
+            },
+            error: function() {
+                $('#myModal').modal('toggle');
+                createToastMsg("The network node has not been changed!", "red")
+                $('#modalSpinner').css("visibility", "hidden");
+                queryNetworkNodes();
+            }
+        });
     }
 }
 
 function handleDelete(id){
-    console.log(id)
-    //ajax
+    $.ajax({
+        type: "DELETE",
+        url: "http://localhost:8081/api-v1/nodes/" + id,
+        success: function(){
+            $('#myModal').modal('toggle');
+            createToastMsg("The network node has been deleted!", "green")
+            queryNetworkNodes();
+        },
+        error: function() {
+            $('#myModal').modal('toggle');
+            createToastMsg("The network node has not been deleted!", "red")
+            queryNetworkNodes();
+        }
+    });
 }
 
 function handleSearch(){
     var searchNodeID = $('#findNodeID').val();
     if(Number.isInteger(parseInt(searchNodeID))){
-        //ajax
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8081/api-v1/nodes/" + searchNodeID,
+            success: function(response){
+                $('#cardsPage').empty();
+                $('#cardsPage').append(newCard(response.id, response.node_name, response.node_location, response.latitude, response.longitude))
+            },
+            error: function() {
+                createToastMsg("The network node has not found with " + searchNodeID, "red")
+                queryNetworkNodes();
+            }
+        });
     }
     else{
         createToastMsg("Enter a valid node ID", "red")
@@ -117,37 +196,49 @@ function newCard(id,name,location,latitude, longitude){
 }
 
 function editModalPopUp(id){
-    $('#myModalLabel').empty();
-    $('#myModalLabel').html("Edit Node");
+    $.ajax({
+        type: "GET",
+        url: "http://localhost:8081/api-v1/nodes/" + id,
+        success: function(response){
 
-    $('#modalBody').empty();
-    $('#modalBody').append(
-        '<form>'+
-        '<div class="form-group">'+
-        '<label for="newNetworkName">Edit Network Name</label>'+
-        '<input type="text" class="form-control" id="editNetworkName">'+
-        '</div>'+
-        '<div class="form-group">'+
-        '<label for="newLatitude">Edit Latitude</label>'+
-        '<input type="text" class="form-control" id="editLatitude">'+
-        '</div>'+
-        '<div class="form-group">'+
-        '<label for="newLongitude">Edit Longitude</label>'+
-        '<input type="text" class="form-control" id="editLongitude">'+
-        '</div>'+
-        '</form>'
-    );
+            $('#myModalLabel').empty();
+            $('#myModalLabel').html("Edit Node");
 
-    $('#modalFooter').empty();
-    $('#modalFooter').append(
-        '<div id="modalSpinner" class="spinner-border" style="width: 3rem; height: 3rem; visibility: hidden;" role="status">'+
+            $('#modalBody').empty();
+            $('#modalBody').append(
+                '<form>'+
+                '<div class="form-group">'+
+                '<label for="newNetworkName">Edit Network Name</label>'+
+                '<input type="text" class="form-control" id="editNetworkName" value='+response.node_name+'>'+
+                '</div>'+
+                '<div class="form-group">'+
+                '<label for="newLatitude">Edit Latitude</label>'+
+                '<input type="text" class="form-control" id="editLatitude" value='+response.latitude+'>'+
+                '</div>'+
+                '<div class="form-group">'+
+                '<label for="newLongitude">Edit Longitude</label>'+
+                '<input type="text" class="form-control" id="editLongitude" value='+response.longitude+'>'+
+                '</div>'+
+                '</form>'
+            );
 
-        '</div>'+
-    '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
-    '<button type="button" class="btn btn-success" onclick="handleEdit('+id+')">Make Changes</button>'
-    );
+            $('#modalFooter').empty();
+            $('#modalFooter').append(
+                '<div id="modalSpinner" class="spinner-border" style="width: 3rem; height: 3rem; visibility: hidden;" role="status">'+
 
-    $('#myModal').modal('show');
+                '</div>'+
+                '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
+                '<button type="button" class="btn btn-success" onclick="handleEdit('+id+')">Make Changes</button>'
+            );
+
+            $('#myModal').modal('show');
+        },
+        error: function() {
+            createToastMsg("Failed to find a the node by " + id, "red")
+        }
+    });
+
+
 }
 
 function deleteModalPopUp(id){
