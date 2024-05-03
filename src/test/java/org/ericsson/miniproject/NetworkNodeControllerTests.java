@@ -1,6 +1,7 @@
 package org.ericsson.miniproject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -66,5 +63,27 @@ public class NetworkNodeControllerTests {
         assertEquals("msg: Network node successfully added., nodeId= 1", responseEntity.getBody());
 
     }
+    @Order(2)
+    @Test
+    void deleteNode() {
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
+        ResponseEntity<String> addNodeResponse = testRestTemplate.postForEntity(baseUrl, node, String.class);
+        assertEquals(HttpStatus.OK, addNodeResponse.getStatusCode());
 
+        // Extract the node ID from the response of adding a node
+        String[] splitResponse = addNodeResponse.getBody().split("=");
+        String nodeIdStr = splitResponse[1].trim();
+        int nodeId = Integer.parseInt(nodeIdStr);
+
+        // Set up the HTTP headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Send the DELETE request
+        ResponseEntity<Boolean> deleteResponse = testRestTemplate.exchange(baseUrl + "/" + nodeId, HttpMethod.DELETE, new HttpEntity<>(headers), Boolean.class);
+
+        // Check the response
+        assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
+        assertTrue(deleteResponse.getBody());
+    }
 }
