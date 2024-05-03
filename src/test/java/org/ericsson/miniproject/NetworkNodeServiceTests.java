@@ -1,6 +1,6 @@
 package org.ericsson.miniproject;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -68,5 +68,24 @@ public class NetworkNodeServiceTests {
         ResponseMsg msg = fixture.addNode(node);
         assertEquals(ResponseMsg.NODE_INVALID, msg);
         verify(nodeRepo, never()).save(node);
+    }
+
+    @Test
+    void deleteNode_nodeDeleted(){
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
+        when(nodeRepo.save(node)).thenReturn(node);
+        ResponseMsg msg = fixture.addNode(node);
+        assertEquals(ResponseMsg.NODE_ADDED, msg);
+        when(nodeRepo.existsById(node.getId())).thenReturn(true);
+        assertTrue(fixture.deleteNode(node.getId()));
+        verify(nodeRepo, atMostOnce()).deleteById(node.getId());
+    }
+
+    @Test
+    void deleteNullNode_nodeNotDeleted(){
+        NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
+        when(nodeRepo.existsById(node.getId())).thenReturn(false);
+        assertFalse(fixture.deleteNode(node.getId()));
+        verify(nodeRepo, never()).deleteById(node.getId());
     }
 }

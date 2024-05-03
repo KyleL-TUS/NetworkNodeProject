@@ -43,12 +43,16 @@ public class NetworkNodeService implements INetworkNodeService{
 
     @Override
     public boolean deleteNode(int id) {
+        Optional<NetworkNode> deletedNode = nodeRepository.findById(id);
         if (nodeRepository.existsById(id)) {
             nodeRepository.deleteById(id);
+            log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_DELETED, deletedNode));
             return true;
         }
+        log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_DELETED_FAILURE, deletedNode));
         return false;
     }
+
 
     @Override
     public List<NetworkNode> getAllNodes() {
