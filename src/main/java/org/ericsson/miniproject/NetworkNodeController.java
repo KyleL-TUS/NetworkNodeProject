@@ -20,7 +20,7 @@ public class NetworkNodeController {
     public ResponseEntity<String>  addNode(@RequestBody NetworkNode node) {
         int nodeId = networkNodeService.addNode(node);
         String responseStr = String.format("msg: %s, nodeId= %d", 
-            ((nodeId == -1)? ResponseMsg.NODE_INVALID: ResponseMsg.NODE_ADDED), nodeId);
+            ((nodeId == -1)? ResponseMsg.NODE_ADDED_FAILURE: ResponseMsg.NODE_ADDED), nodeId);
         return ResponseEntity.ok().body(responseStr);
     }
 
@@ -41,13 +41,11 @@ public class NetworkNodeController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseMsg> updateNode(@PathVariable("id") Long id, @RequestBody NetworkNode updatedNode) {
-
         return ResponseEntity.ok().body(networkNodeService.updateNode(Math.toIntExact(id), updatedNode));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean>  deleteNode(@PathVariable("id") Long id) {
-
         return ResponseEntity.ok().body(networkNodeService.deleteNode(Math.toIntExact(id)));
     }
 }
