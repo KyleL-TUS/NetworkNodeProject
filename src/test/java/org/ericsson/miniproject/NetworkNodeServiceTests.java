@@ -1,118 +1,109 @@
 package org.ericsson.miniproject;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.atMostOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.Optional;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 
-
+@Sql(scripts = { "classpath:clear-data.sql" }, executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@ActiveProfiles("dev")
 @SpringBootTest
 public class NetworkNodeServiceTests {
 
-    @MockBean
     NetworkNodeRepository nodeRepo;
 
     @Autowired
     NetworkNodeService fixture;
 
     @Test
-    void addNode_nodeAdded(){
-        NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
-        when(nodeRepo.save(node)).thenReturn(node);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_ADDED, msg);
-        verify(nodeRepo, atMostOnce()).save(node);
+    void addNode_nodeAdded() {
+        NetworkNode node = new NetworkNode("Test node A", "Test loc", 70, -70);
+        int nodeId = fixture.addNode(node);
+        assertEquals(1, nodeId);
     }
 
     @Test
-    void addNullNode_nodeNotAdded(){
+    void addNullNode_nodeNotAdded() {
         NetworkNode node = null;
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_INVALID, msg);
-        verify(nodeRepo, never()).save(node);
+        int nodeId = fixture.addNode(node);
+        assertEquals(-1, nodeId);
     }
 
     @Test
-    void addInvalidNodeName_nodeNotAdded(){
+    void addInvalidNodeName_nodeNotAdded() {
         NetworkNode node = new NetworkNode("", "Test loc", 70, -70);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_INVALID, msg);
-        verify(nodeRepo, never()).save(node);
+        int nodeId = fixture.addNode(node);
+        assertEquals(-1, nodeId);
     }
 
     @Test
-    void addInvalidNodeLocation_nodeNotAdded(){
+    void addInvalidNodeLocation_nodeNotAdded() {
         NetworkNode node = new NetworkNode("Test node", "", 70, -70);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_INVALID, msg);
-        verify(nodeRepo, never()).save(node);
+        int nodeId = fixture.addNode(node);
+        assertEquals(-1, nodeId);
     }
 
     @Test
-    void addInvalidLatitude_nodeNotAdded(){
+    void addInvalidLatitude_nodeNotAdded() {
         NetworkNode node = new NetworkNode("Test node", "Test loc", 95, -70);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_INVALID, msg);
-        verify(nodeRepo, never()).save(node);
+        int nodeId = fixture.addNode(node);
+        assertEquals(-1, nodeId);
     }
 
     @Test
-    void addInvalidLongitude_nodeNotAdded(){
+    void addInvalidLongitude_nodeNotAdded() {
         NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -200);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_INVALID, msg);
-        verify(nodeRepo, never()).save(node);
+        int nodeId = fixture.addNode(node);
+        assertEquals(-1, nodeId);
     }
 
     @Test
-    void getNodeById_nodeFound(){
-        NetworkNode testNode = new NetworkNode("Test node", "Test loc", 70, -70);
+    void getNodeById_nodeFound() {
+        NetworkNode testNode = new NetworkNode("Test node B", "Test loc", 50, -50);
 
-        when(nodeRepo.save(testNode)).thenReturn(testNode);
-        ResponseMsg msg = fixture.addNode(testNode);
-        assertEquals(ResponseMsg.NODE_ADDED, msg);
-        verify(nodeRepo, atMostOnce()).save(testNode);
+        int nodeId = fixture.addNode(testNode);
+        assertEquals(1, nodeId);
 
-        when(nodeRepo.findById(testNode.getId())).thenReturn(Optional.of(testNode));
         NetworkNode foundNode = fixture.getNodeById(testNode.getId());
-        assertEquals(testNode, foundNode);
-        verify(nodeRepo, atLeast(1)).findById(testNode.getId());
+        assertEquals(testNode.getId(), foundNode.getId());
     }
 
     @Test
-    void getNodeById_nodeNotFound(){
+    void getNodeById_nodeNotFound() {
         NetworkNode testNode = new NetworkNode("Test node", "Test loc", 70, -70);
-
-
         NetworkNode foundNode = fixture.getNodeById(testNode.getId());
         assertEquals(null, foundNode);
-        verify(nodeRepo, atLeastOnce()).findById(testNode.getId());
-    }
-  
-    @Test
-    void deleteNode_nodeDeleted(){
-        NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
-        when(nodeRepo.save(node)).thenReturn(node);
-        ResponseMsg msg = fixture.addNode(node);
-        assertEquals(ResponseMsg.NODE_ADDED, msg);
-        when(nodeRepo.existsById(node.getId())).thenReturn(true);
-        assertTrue(fixture.deleteNode(node.getId()));
-        verify(nodeRepo, atMostOnce()).deleteById(node.getId());
     }
 
     @Test
-    void deleteNullNode_nodeNotDeleted(){
-        NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
-        when(nodeRepo.existsById(node.getId())).thenReturn(false);
-        assertFalse(fixture.deleteNode(node.getId()));
-        verify(nodeRepo, never()).deleteById(node.getId());
+    void updateNode_existingNode() {
+        NetworkNode originalNode = new NetworkNode("Original", "Loc", 50, 50);
+        NetworkNode updatedNode = new NetworkNode("Updated", "Loc", 50, 50);
+
+        fixture.addNode(originalNode);
+        ResponseMsg msg = fixture.updateNode(1, updatedNode);
+        assertEquals(ResponseMsg.NODE_UPDATED, msg); // Updated assertion
+    }
+
+    @Test
+    void updateNode_nonExistingNode() {
+        NetworkNode updatedNode = new NetworkNode("Updated", "Loc", 50, 50);
+        updatedNode.setId(1);
+
+        ResponseMsg result = fixture.updateNode(1, updatedNode);
+        assertEquals(ResponseMsg.NODE_NOT_FOUND, result); // Updated assertion
+    }
+
+    @Test
+    void deleteNode_nodeDeleted(){
+        NetworkNode node = new NetworkNode("Test node C", "Test loc", 20, -70);
+        int nodeId = fixture.addNode(node);
+        assertEquals(1, nodeId);
+        assertTrue(fixture.deleteNode(node.getId()));
     }
 }

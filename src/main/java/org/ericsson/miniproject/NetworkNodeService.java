@@ -16,14 +16,15 @@ public class NetworkNodeService implements INetworkNodeService{
     private NetworkNodeRepository nodeRepository;
 
     @Override
-    public ResponseMsg addNode(NetworkNode node) {
+    public int addNode(NetworkNode node) {
         if(!isValidNetworkNode(node)){
             log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_INVALID, node));
-            return ResponseMsg.NODE_INVALID;
+            return -1;
         }
         nodeRepository.save(node);
+        nodeRepository.flush();
         log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_ADDED, node));
-        return ResponseMsg.NODE_ADDED;
+        return nodeRepository.findNodeByPosition(node.getLongitude(), node.getLatitude()).get().getId();
     }
 
     @Override
@@ -40,12 +41,15 @@ public class NetworkNodeService implements INetworkNodeService{
     }
 
     @Override
-    public NetworkNode updateNode(int id, NetworkNode updatedNode) {
+    public ResponseMsg updateNode(int id, NetworkNode updatedNode) {
         if (nodeRepository.existsById(id)) {
             updatedNode.setId(id);
-            return nodeRepository.save(updatedNode);
+            nodeRepository.save(updatedNode);
+            log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_UPDATED, updatedNode));
+            return ResponseMsg.NODE_UPDATED;
         }
-        return null;
+        log.info(String.format("msg: %s, node-id: %s", ResponseMsg.NODE_NOT_FOUND, id));
+        return ResponseMsg.NODE_NOT_FOUND;
     }
 
     @Override
@@ -59,7 +63,6 @@ public class NetworkNodeService implements INetworkNodeService{
         log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_DELETED_FAILURE, deletedNode));
         return false;
     }
-
 
     @Override
     public List<NetworkNode> getAllNodes() {

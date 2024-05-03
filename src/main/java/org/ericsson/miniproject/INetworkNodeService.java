@@ -8,9 +8,9 @@ public interface INetworkNodeService {
 
     NetworkNode getNodeById(int id);
 
-    ResponseMsg addNode(NetworkNode node);
+    int addNode(NetworkNode node);
 
-    NetworkNode updateNode(int id, NetworkNode updatedNode);
+    ResponseMsg updateNode(int id, NetworkNode updatedNode);
 
     boolean deleteNode(int id);
 
