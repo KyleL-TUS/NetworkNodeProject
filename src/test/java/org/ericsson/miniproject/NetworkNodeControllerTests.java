@@ -88,14 +88,13 @@ public class NetworkNodeControllerTests {
     @Order(3)
     @Test
     void getNodeById() {
-        // Add a node first to ensure there's a node to retrieve
         NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
         ResponseEntity<String> addNodeResponse = testRestTemplate.postForEntity(baseUrl, node, String.class);
         assertEquals(HttpStatus.OK, addNodeResponse.getStatusCode());
 
         // Extract the node ID from the response of adding a node
         String[] splitResponse = addNodeResponse.getBody().split("=");
-        String nodeIdStr = splitResponse[1].trim(); // Trim leading/trailing whitespace
+        String nodeIdStr = splitResponse[1].trim();
         int nodeId = Integer.parseInt(nodeIdStr);
 
         // Send the GET request to retrieve the added node
