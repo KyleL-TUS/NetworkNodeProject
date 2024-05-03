@@ -10,7 +10,7 @@ public interface INetworkNodeService {
 
     ResponseMsg addNode(NetworkNode node);
 
-    NetworkNode updateNode(int id, NetworkNode updatedNode);
+    ResponseMsg updateNode(int id, NetworkNode updatedNode);
 
     boolean deleteNode(int id);
 

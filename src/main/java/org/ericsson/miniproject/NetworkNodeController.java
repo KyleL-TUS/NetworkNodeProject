@@ -38,10 +38,8 @@ public class NetworkNodeController {
         }
     }
 
-
-
     @PutMapping("/{id}")
-    public ResponseEntity<NetworkNode> updateNode(@PathVariable("id") Long id, @RequestBody NetworkNode updatedNode) {
+    public ResponseEntity<ResponseMsg> updateNode(@PathVariable("id") Long id, @RequestBody NetworkNode updatedNode) {
 
         return ResponseEntity.ok().body(networkNodeService.updateNode(Math.toIntExact(id), updatedNode));
     }

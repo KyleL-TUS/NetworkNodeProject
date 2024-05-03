@@ -1,10 +1,7 @@
 package org.ericsson.miniproject;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.atMostOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Optional;
-
 
 @SpringBootTest
 public class NetworkNodeServiceTests {
@@ -96,7 +92,34 @@ public class NetworkNodeServiceTests {
         assertEquals(null, foundNode);
         verify(nodeRepo, atLeastOnce()).findById(testNode.getId());
     }
-  
+
+@Test
+void updateNode_existingNode() {
+    NetworkNode originalNode = new NetworkNode("Original", "Loc", 50, 50);
+    NetworkNode updatedNode = new NetworkNode("Updated", "Loc", 50, 50);
+    originalNode.setId(1);
+    updatedNode.setId(1);
+
+    when(nodeRepo.existsById(1)).thenReturn(true);
+    when(nodeRepo.save(updatedNode)).thenReturn(updatedNode);
+
+    ResponseMsg msg = fixture.updateNode(1, updatedNode);
+    assertEquals(ResponseMsg.NODE_UPDATED, msg); // Updated assertion
+    verify(nodeRepo).save(updatedNode);
+}
+
+    @Test
+    void updateNode_nonExistingNode() {
+        NetworkNode updatedNode = new NetworkNode("Updated", "Loc", 50, 50);
+        updatedNode.setId(1);
+
+        when(nodeRepo.existsById(1)).thenReturn(false);
+
+        ResponseMsg result = fixture.updateNode(1, updatedNode);
+        assertEquals(ResponseMsg.NODE_NOT_FOUND, result); // Updated assertion
+        verify(nodeRepo, never()).save(any(NetworkNode.class));
+    }
+
     @Test
     void deleteNode_nodeDeleted(){
         NetworkNode node = new NetworkNode("Test node", "Test loc", 70, -70);
