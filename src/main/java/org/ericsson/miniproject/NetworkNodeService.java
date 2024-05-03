@@ -21,6 +21,12 @@ public class NetworkNodeService implements INetworkNodeService{
             log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_INVALID, node));
             return -1;
         }
+        
+        Optional<NetworkNode> foundNode = nodeRepository.findNodeByPosition(node.getLongitude(), node.getLatitude());
+        if(foundNode.isPresent()){
+            log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_FOUND, node));
+            return -1;
+        }
         nodeRepository.save(node);
         nodeRepository.flush();
         log.info(String.format("msg: %s, node: %s", ResponseMsg.NODE_ADDED, node));
