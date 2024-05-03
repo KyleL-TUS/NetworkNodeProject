@@ -1,11 +1,8 @@
 package org.ericsson.miniproject;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.net.URI;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -18,14 +15,19 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Sql(scripts = { "classpath:clear-data.sql" }, executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@ActiveProfiles("dev")
 @TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class NetworkNodeControllerTests {
@@ -37,30 +39,32 @@ public class NetworkNodeControllerTests {
     int testServerPort;
 
     String baseUrl;
-    HttpHeaders headers;
-    JSONObject jsonObject;
-    ObjectMapper objectMapper;
 
     @BeforeEach
     void init(){
         baseUrl = "http://localhost:"+testServerPort+"/api-v1/nodes";
-        headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        jsonObject = new JSONObject();
-        objectMapper = new ObjectMapper();
     }
 
     @Order(1)
     @Test
     void addNode() throws JsonMappingException, JsonProcessingException, JSONException{
         NetworkNode node = new NetworkNode("Test node", "Test loc", 50, 90);
-        URI postUri = URI.create(baseUrl);
-        jsonObject.put("node", node.toString());
-        HttpEntity<String> request = new HttpEntity<String>(jsonObject.toString(), headers);
-        ResponseEntity<String> responseEntityStr = testRestTemplate.postForEntity(postUri, request, String.class);
-        JsonNode root = objectMapper.readTree(responseEntityStr.getBody());
-        assertNotNull(responseEntityStr.getBody());
-        assertNotNull(root.path("node").asText());
+
+        // Convert NetworkNode object to JSON string
+        ObjectMapper objectMapper = new ObjectMapper();
+        String nodeJson = objectMapper.writeValueAsString(node);
+
+        // Set up the HTTP headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Send the POST request
+        ResponseEntity<String> responseEntity = testRestTemplate.postForEntity(baseUrl, new HttpEntity<>(nodeJson, headers), String.class);
+
+        // Check the response
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals("msg: Network node successfully added., nodeId= 1", responseEntity.getBody());
+
     }
 
 }
