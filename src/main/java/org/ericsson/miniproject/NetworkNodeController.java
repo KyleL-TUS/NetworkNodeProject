@@ -21,7 +21,13 @@ public class NetworkNodeController {
         int nodeId = networkNodeService.addNode(node);
         String responseStr = String.format("msg: %s, nodeId= %d", 
             ((nodeId == -1)? ResponseMsg.NODE_ADDED_FAILURE: ResponseMsg.NODE_ADDED), nodeId);
-        return ResponseEntity.ok().body(responseStr);
+        
+        if(nodeId == -1){
+            return ResponseEntity.badRequest().body(responseStr);
+        }else{
+            
+            return ResponseEntity.ok().body(responseStr);
+        }
     }
 
     @GetMapping
